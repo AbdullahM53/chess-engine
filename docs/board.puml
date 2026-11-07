@@ -5,41 +5,42 @@ skinparam classAttributeIconSize 0
 skinparam shadowing false
 skinparam defaultFontName Arial
 
-' ---- Types ----
+' ---- Types (ChessType.h) ----
 class "Bitboard" as BB <<typedef>> {
     uint64_t
 }
 
 class "Square" as SQ <<typedef>> {
     int (a1 = 0 ... h8 = 63)
+    NoSquare = -1
 }
 
 enum Color {
-    WHITE = 0
-    BLACK = 1
+    White = 0
+    Black = 1
 }
 
 enum PieceType {
-    PAWN
-    KNIGHT
-    BISHOP
-    ROOK
-    QUEEN
-    KING
-    NONE
+    None = 0
+    Pawn = 1
+    Knight = 2
+    Bishop = 3
+    Rook = 4
+    Queen = 5
+    King = 6
 }
 
-enum CastlingRight {
-    WHITE_KINGSIDE = 1
-    WHITE_QUEENSIDE = 2
-    BLACK_KINGSIDE = 4
-    BLACK_QUEENSIDE = 8
+enum CastlingRights {
+    White_KingSide = 1
+    White_QueenSide = 2
+    Black_KingSide = 4
+    Black_QueenSide = 8
 }
 
-' ---- Main class ----
+' ---- Board ----
 class Board {
     - byColor : Bitboard[2]
-    - byType : Bitboard[6]
+    - byType : Bitboard[7]
     - sideToMove : Color
     - castlingRights : uint8_t
     - enPassantSquare : Square
@@ -50,6 +51,7 @@ class Board {
     + clear() : void
     + setFromFEN(fen : std::string) : bool
     + toFEN() : std::string
+    + print() : void
     --
     + setPiece(sq : Square, c : Color, pt : PieceType) : void
     + removePiece(sq : Square) : void
@@ -64,8 +66,8 @@ class Board {
     --
     + getSideToMove() : Color
     + setSideToMove(c : Color) : void
-    + hasCastlingRight(cr : CastlingRight) : bool
-    + removeCastlingRight(cr : CastlingRight) : void
+    + hasCastlingRight(cr : CastlingRights) : bool
+    + removeCastlingRight(cr : CastlingRights) : void
     + getEnPassantSquare() : Square
     + setEnPassantSquare(sq : Square) : void
     + getHalfmoveClock() : int
@@ -76,11 +78,13 @@ Board ..> BB : uses
 Board ..> SQ : uses
 Board ..> Color : uses
 Board ..> PieceType : uses
-Board ..> CastlingRight : uses
+Board ..> CastlingRights : uses
 
 note right of Board
+  byType is indexed directly by PieceType,
+  so index 0 (None) is never used.
   pieces(c, pt) = byColor[c] & byType[pt]
-  occupancy() = byColor[WHITE] | byColor[BLACK]
+  occupancy() = byColor[White] | byColor[Black]
   Squares: a1 = 0 ... h8 = 63
 end note
 
