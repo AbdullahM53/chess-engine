@@ -10,6 +10,10 @@ class "Bitboard" as BB <<typedef>> {
     uint64_t
 }
 
+class "Square" as SQ <<typedef>> {
+    int (a1 = 0 ... h8 = 63)
+}
+
 enum Color {
     WHITE = 0
     BLACK = 1
@@ -22,6 +26,14 @@ enum PieceType {
     ROOK
     QUEEN
     KING
+    NONE
+}
+
+enum CastlingRight {
+    WHITE_KINGSIDE = 1
+    WHITE_QUEENSIDE = 2
+    BLACK_KINGSIDE = 4
+    BLACK_QUEENSIDE = 8
 }
 
 ' ---- Main class ----
@@ -29,27 +41,46 @@ class Board {
     - byColor : Bitboard[2]
     - byType : Bitboard[6]
     - sideToMove : Color
-    - castlingRights : int
-    - enPassantSquare : int
+    - castlingRights : uint8_t
+    - enPassantSquare : Square
     - halfmoveClock : int
     - fullmoveNumber : int
     --
     + Board()
-    + setPiece(sq : int, c : Color, pt : PieceType) : void
-    + removePiece(sq : int) : void
+    + clear() : void
+    + setFromFEN(fen : std::string) : bool
+    + toFEN() : std::string
+    --
+    + setPiece(sq : Square, c : Color, pt : PieceType) : void
+    + removePiece(sq : Square) : void
+    + isEmpty(sq : Square) : bool
+    + pieceTypeAt(sq : Square) : PieceType
+    + colorAt(sq : Square) : Color
+    --
     + occupancy() : Bitboard
     + pieces(c : Color) : Bitboard
     + pieces(pt : PieceType) : Bitboard
     + pieces(c : Color, pt : PieceType) : Bitboard
+    --
     + getSideToMove() : Color
+    + setSideToMove(c : Color) : void
+    + hasCastlingRight(cr : CastlingRight) : bool
+    + removeCastlingRight(cr : CastlingRight) : void
+    + getEnPassantSquare() : Square
+    + setEnPassantSquare(sq : Square) : void
+    + getHalfmoveClock() : int
+    + getFullmoveNumber() : int
 }
 
 Board ..> BB : uses
+Board ..> SQ : uses
 Board ..> Color : uses
 Board ..> PieceType : uses
+Board ..> CastlingRight : uses
 
 note right of Board
   pieces(c, pt) = byColor[c] & byType[pt]
+  occupancy() = byColor[WHITE] | byColor[BLACK]
   Squares: a1 = 0 ... h8 = 63
 end note
 
