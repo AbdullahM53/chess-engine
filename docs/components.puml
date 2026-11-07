@@ -1,0 +1,37 @@
+@startuml ChessEngine_Components
+title Chess Engine - Component Diagram
+
+skinparam componentStyle uml2
+skinparam shadowing false
+skinparam defaultFontName Arial
+skinparam ArrowColor #444444
+
+package "Presentation Layer" {
+    [GUI]
+}
+
+package "Application Layer" {
+    [Game]
+}
+
+package "Engine Core" {
+    [Board]
+    [MoveGenerator]
+    [Evaluator]
+    [Search]
+}
+
+' ---- Dependencies ("uses") ----
+[GUI] --> [Game] : sends clicks\nreads game state
+
+[Game] --> [Board] : holds current position
+[Game] --> [MoveGenerator] : validates player moves
+[Game] --> [Search] : asks for engine reply
+
+[MoveGenerator] --> [Board] : reads position
+[Evaluator] --> [Board] : reads position
+[Search] --> [Board] : makes / unmakes moves
+[Search] --> [MoveGenerator] : generates candidate moves
+[Search] --> [Evaluator] : scores positions
+
+@enduml
