@@ -1,0 +1,105 @@
+@startuml Move_ClassDiagram
+title Chess Engine - Move and MoveList Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+
+' ---- Shared types (defined in the Board diagram) ----
+class "Square" as SQ <<typedef>> {
+    int (a1 = 0 ... h8 = 63)
+}
+
+enum PieceType {
+    PAWN
+    KNIGHT
+    BISHOP
+    ROOK
+    QUEEN
+    KING
+    NONE
+}
+
+' ---- Move flags (4 bits) ----
+enum MoveFlag {
+    QUIET = 0
+    DOUBLE_PAWN_PUSH = 1
+    KING_CASTLE = 2
+    QUEEN_CASTLE = 3
+    CAPTURE = 4
+    EP_CAPTURE = 5
+    PROMO_KNIGHT = 8
+    PROMO_BISHOP = 9
+    PROMO_ROOK = 10
+    PROMO_QUEEN = 11
+    PROMO_KNIGHT_CAPTURE = 12
+    PROMO_BISHOP_CAPTURE = 13
+    PROMO_ROOK_CAPTURE = 14
+    PROMO_QUEEN_CAPTURE = 15
+}
+
+' ---- Move ----
+class Move {
+    - data : uint16_t
+    --
+    + Move()
+    + Move(from : Square, to : Square, flag : MoveFlag)
+    --
+    + from() : Square
+    + to() : Square
+    + flags() : MoveFlag
+    --
+    + isCapture() : bool
+    + isPromotion() : bool
+    + isEnPassant() : bool
+    + isCastle() : bool
+    + isDoublePawnPush() : bool
+    + promotionPiece() : PieceType
+    + isNone() : bool
+    --
+    + operator==(other : Move) : bool
+    + operator!=(other : Move) : bool
+    --
+    + {static} MOVE_NONE : Move
+}
+
+' ---- MoveList ----
+class MoveList {
+    - moves : std::array<Move, 256>
+    - count : int
+    --
+    + MoveList()
+    + add(m : Move) : void
+    + size() : int
+    + empty() : bool
+    + clear() : void
+    + operator[](i : int) : Move
+    + begin() : const Move*
+    + end() : const Move*
+    --
+    + {static} MAX_MOVES : int = 256
+}
+
+Move ..> SQ : uses
+Move ..> PieceType : uses
+Move ..> MoveFlag : uses
+MoveList "1" *-- "0..256" Move : contains
+
+note right of Move
+  16-bit layout:
+  bits 0-5   = from square
+  bits 6-11  = to square
+  bits 12-15 = flags
+
+  Flag bits:
+  bit 3 (8) = promotion
+  bit 2 (4) = capture
+  bits 1-0  = special / promotion piece
+end note
+
+note bottom of MoveList
+  Max moves in one position is about 218,
+  so 256 slots are always enough.
+end note
+
+@enduml
