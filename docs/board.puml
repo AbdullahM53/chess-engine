@@ -1,0 +1,56 @@
+@startuml Board_ClassDiagram
+title Chess Engine - Board Class Diagram
+
+skinparam classAttributeIconSize 0
+skinparam shadowing false
+skinparam defaultFontName Arial
+
+' ---- Types ----
+class "Bitboard" as BB <<typedef>> {
+    uint64_t
+}
+
+enum Color {
+    WHITE = 0
+    BLACK = 1
+}
+
+enum PieceType {
+    PAWN
+    KNIGHT
+    BISHOP
+    ROOK
+    QUEEN
+    KING
+}
+
+' ---- Main class ----
+class Board {
+    - byColor : Bitboard[2]
+    - byType : Bitboard[6]
+    - sideToMove : Color
+    - castlingRights : int
+    - enPassantSquare : int
+    - halfmoveClock : int
+    - fullmoveNumber : int
+    --
+    + Board()
+    + setPiece(sq : int, c : Color, pt : PieceType) : void
+    + removePiece(sq : int) : void
+    + occupancy() : Bitboard
+    + pieces(c : Color) : Bitboard
+    + pieces(pt : PieceType) : Bitboard
+    + pieces(c : Color, pt : PieceType) : Bitboard
+    + getSideToMove() : Color
+}
+
+Board ..> BB : uses
+Board ..> Color : uses
+Board ..> PieceType : uses
+
+note right of Board
+  pieces(c, pt) = byColor[c] & byType[pt]
+  Squares: a1 = 0 ... h8 = 63
+end note
+
+@enduml
